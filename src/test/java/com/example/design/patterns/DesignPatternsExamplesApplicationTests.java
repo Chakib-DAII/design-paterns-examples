@@ -9,6 +9,10 @@ import com.example.design.patterns.creational.prototype.PrototypeB;
 import com.example.design.patterns.creational.singleton.SingletonA;
 import com.example.design.patterns.creational.singleton.SingletonB;
 
+import com.example.design.patterns.operational.publish.subscribe.custom.OurCustomEvent;
+import com.example.design.patterns.operational.publish.subscribe.custom.OurEventPublisher;
+import com.example.design.patterns.operational.publish.subscribe.custom.OurSecondEventPublisher;
+import com.example.design.patterns.operational.publish.subscribe.custom.generic.GenericSpringEventPublisher;
 import com.example.design.patterns.operational.repository.SampleEntity;
 import com.example.design.patterns.operational.repository.SampleRepository;
 import com.example.design.patterns.operational.template.ImplementationA;
@@ -35,6 +39,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
+
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -59,21 +65,6 @@ public class DesignPatternsExamplesApplicationTests {
 
 	@MockBean
 	private PetFactory petFactory;
-
-	@Autowired
-	SingletonB singletonB1;
-
-	@Autowired
-	SingletonB singletonB2;
-
-	@Autowired
-	PrototypeB prototypeB1;
-
-	@Autowired
-	PrototypeB prototypeB2;
-
-	@Autowired
-	SampleRepository sampleRepository;
 
 	@Before
 	public void setUp() {
@@ -140,6 +131,12 @@ public class DesignPatternsExamplesApplicationTests {
 
 	}
 
+	@Autowired
+	SingletonB singletonB1;
+
+	@Autowired
+	SingletonB singletonB2;
+
 	@Test
 	public void testSingletons(){
 		SingletonA singletonA1 = SingletonA.getInstance();
@@ -152,6 +149,15 @@ public class DesignPatternsExamplesApplicationTests {
 		Assert.assertNotNull(singletonB2);
 		Assert.assertSame(singletonB1, singletonB2);
 	}
+
+
+
+
+	@Autowired
+	PrototypeB prototypeB1;
+
+	@Autowired
+	PrototypeB prototypeB2;
 
 	@Test
 	public void testPrototypes() throws CloneNotSupportedException {
@@ -197,6 +203,10 @@ public class DesignPatternsExamplesApplicationTests {
 		object.process();
 	}
 
+
+	@Autowired
+	SampleRepository sampleRepository;
+
 	@Test
 	public void testRepository(){
 		sampleRepository.save(new SampleEntity("name1","description1"));
@@ -217,5 +227,31 @@ public class DesignPatternsExamplesApplicationTests {
 		out.println(templateClassB.open());
 		templateClassB.performWork();
 		templateClassB.close();
+	}
+
+	@Autowired
+	OurEventPublisher ourEventPublisher;
+
+	@Autowired
+	OurSecondEventPublisher ourSecondEventPublisher;
+
+
+	@Test
+	public void publishSubscribe(){
+		ourEventPublisher.publishEvent("message from spring Application Aware Event Publisher");
+		ourEventPublisher.publishEvent("message from spring boot Autowired Application Event Publisher");
+	}
+
+	@Autowired
+	GenericSpringEventPublisher genericSpringEventPublisher;
+
+	@Test
+	public void genericPublishSubscribe(){
+		genericSpringEventPublisher.publishEvent(1, true);
+		genericSpringEventPublisher.publishEvent("String", false);
+		genericSpringEventPublisher.publishEvent(true, false);
+		OurCustomEvent customSpringEvent = new OurCustomEvent(this, "message from a generic spring Application Event Publisher");
+		genericSpringEventPublisher.publishEvent(customSpringEvent, true);
+		genericSpringEventPublisher.publishEvent(Arrays.asList("1","545","a"), false);
 	}
 }
