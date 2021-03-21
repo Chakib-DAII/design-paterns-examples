@@ -4,6 +4,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Component;
 
+import static java.lang.System.*;
+
 /**
  * Created by chakib.daii on 3/21/2021.
  */
@@ -18,7 +20,7 @@ public class OurEventPublisher implements ApplicationEventPublisherAware {
     }
 
     public void publishEvent(final String message) {
-        System.out.println("Publishing our custom event. ");
+        out.println("Publishing our custom event. ");
         OurCustomEvent customSpringEvent = new OurCustomEvent(this, message);
         applicationEventPublisher.publishEvent(customSpringEvent);
     }
