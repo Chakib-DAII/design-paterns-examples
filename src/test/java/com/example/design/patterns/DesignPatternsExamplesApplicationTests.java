@@ -9,6 +9,18 @@ import com.example.design.patterns.creational.prototype.PrototypeB;
 import com.example.design.patterns.creational.singleton.SingletonA;
 import com.example.design.patterns.creational.singleton.SingletonB;
 
+import com.example.design.patterns.event.dispatcher.event.CustomEngineEvent;
+import com.example.design.patterns.event.dispatcher.event.EngineClosedEvent;
+import com.example.design.patterns.event.dispatcher.event.EngineCreatedEvent;
+import com.example.design.patterns.event.dispatcher.listener.TestGlobalEventListener;
+import com.example.design.patterns.event.dispatcher.listener.TestTypedEventListener;
+import com.example.design.patterns.operational.event.dispatcher.dispatcher.EventDispatcher;
+import com.example.design.patterns.operational.event.dispatcher.event.Event;
+import com.example.design.patterns.operational.event.dispatcher.event.RuntimeEvent;
+import com.example.design.patterns.operational.event.dispatcher.listener.CommonAbstractEventListener;
+import com.example.design.patterns.operational.event.dispatcher.listener.EventListener;
+import com.example.design.patterns.operational.event.dispatcher.type.EventType;
+import com.example.design.patterns.operational.event.dispatcher.type.RuntimeEventType;
 import com.example.design.patterns.operational.publish.subscribe.custom.OurCustomEvent;
 import com.example.design.patterns.operational.publish.subscribe.custom.OurEventPublisher;
 import com.example.design.patterns.operational.publish.subscribe.custom.OurSecondEventPublisher;
@@ -39,10 +51,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Arrays;
+import java.util.*;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
+import static com.example.design.patterns.operational.event.dispatcher.type.RuntimeEventType.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -253,5 +266,30 @@ public class DesignPatternsExamplesApplicationTests {
 		OurCustomEvent customSpringEvent = new OurCustomEvent(this, "message from a generic spring Application Event Publisher");
 		genericSpringEventPublisher.publishEvent(customSpringEvent, true);
 		genericSpringEventPublisher.publishEvent(Arrays.asList("1","545","a"), false);
+	}
+
+	@Autowired
+	EventDispatcher eventDispatcher;
+
+	@Test
+	public void eventDispatcher(){
+		assertTrue(eventDispatcher.isEnabled());
+		TestTypedEventListener testTypedEventListener = new TestTypedEventListener();
+		TestGlobalEventListener testGlobalEventListener = new TestGlobalEventListener();
+		eventDispatcher.addEventListener(testTypedEventListener);
+		eventDispatcher.addEventListener(testGlobalEventListener);
+		List<EventListener> eventListeners = eventDispatcher.getEventListeners();
+		assertThat(eventListeners, hasSize(1));
+		Map<EventType, List<EventListener>>  typedEventListener = eventDispatcher.getTypedListeners();
+		assertThat(typedEventListener, hasKey(ENGINE_CREATED));
+		assertThat(typedEventListener, hasKey(CUSTOM));
+		assertThat(typedEventListener, hasKey(ENGINE_CLOSED));
+		HashSet<RuntimeEventType> eventTypes = (HashSet<RuntimeEventType>) testTypedEventListener.getTypes();
+		assertThat(eventTypes, hasSize(3));
+		eventDispatcher.dispatchEvent(new EngineCreatedEvent());
+		eventDispatcher.dispatchEvent(new CustomEngineEvent());
+		eventDispatcher.dispatchEvent(new EngineClosedEvent());
+		List<Event> eventsReceived = testTypedEventListener.getEventsReceived();
+		assertThat(eventsReceived, hasSize(3));
 	}
 }
