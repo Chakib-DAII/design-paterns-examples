@@ -70,7 +70,7 @@ import static java.lang.System.out;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.MOCK, classes={ DesignPatternsExamplesApplication.class })
-public class DesignPatternsExamplesApplicationTests {
+public class DesignPatternsExamplesApplicationTest {
 	private MockMvc mockMvc;
 
 	@Autowired
